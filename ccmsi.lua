@@ -2,7 +2,7 @@ local CCMSI_VERSION = "v1.21"
 
 local install_dir = "/.install-cache"
 local manifest_path = "https://mikaylafischler.github.io/cc-mek-scada/manifests/"
-local repo_path = "http://raw.githubusercontent.com/MikaylaFischler/cc-mek-scada/"
+local repo_path = "http://raw.githubusercontent.com/SamTheDevDE/CC_Reactor_Scada_Mekanism/"
 
 ---@diagnostic disable-next-line: undefined-global
 local _is_pkt_env = pocket -- luacheck: ignore pocket
