@@ -155,34 +155,49 @@ end
 ---@return 0|1|2|3 success 0: ok, 1: download fail, 2: file open fail, 3: out of space
 local function http_get_file(file, w_path)
     local dl, err
+    local url = repo_path .. file
+    println("[debug] Downloading URL: " .. url)
     for i = 1, 3 do
-        dl, err = http.get(repo_path..file)
+        dl, err = http.get(url)
         if dl then
-            if i > 1 then green();println("success!");lgray() end
-            local f = fs.open(w_path..file, "w")
-            if not f then return 2 end
+            if i > 1 then green(); println("success!"); lgray() end
+            println("[debug] HTTP GET succeeded on attempt " .. i)
+
+            local full_path = w_path .. file
+            println("[debug] Writing to: " .. full_path)
+            local f = fs.open(full_path, "w")
+            if not f then 
+                red(); println("[error] Failed to open file for writing.")
+                return 2 
+            end
+
             local ok, msg = pcall(function() f.write(dl.readAll()) end)
             f.close()
             if not ok then
+                red(); println("[error] Write failed: " .. (msg or "unknown error"))
                 if string.find(msg or "", "Out of space") ~= nil then
-                    red();println("[out of space]");lgray()
+                    red(); println("[out of space]"); lgray()
                     return 3
-                else return 2 end
+                else 
+                    return 2 
+                end
             end
             break
         else
-            red();println("HTTP Error: "..err)
+            red(); println("[error] HTTP Error: " .. (err or "unknown error"))
             if i < 3 then
-                lgray();print("> retrying...")
+                lgray(); print("> retrying... (attempt " .. (i + 1) .. ")\n")
                 ---@diagnostic disable-next-line: undefined-field
-                os.sleep(i/3.0)
+                os.sleep(i / 3.0)
             else
+                red(); println("[error] Failed to download after 3 attempts.")
                 return 1
             end
         end
     end
     return 0
 end
+
 
 -- recursively build a tree out of the file manifest
 local function gen_tree(manifest, log)
